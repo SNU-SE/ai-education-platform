@@ -1,6 +1,9 @@
+import { useState } from 'react'
 import { useAuthContext } from '../contexts/AuthContext'
+import { ChatInterface } from '../components/chat/ChatInterface'
 
 export function StudentDashboard() {
+  const [showChat, setShowChat] = useState(false)
   const { user, signOut } = useAuthContext()
 
   return (
@@ -35,27 +38,39 @@ export function StudentDashboard() {
           
           {/* AI 채팅 섹션 */}
           <div className="mb-8">
-            <h2 className="text-lg leading-6 font-medium text-gray-900 mb-4">
-              💬 AI 튜터와 대화하기
-            </h2>
-            <div className="bg-white shadow rounded-lg">
-              <div className="p-6">
-                <div className="flex items-center justify-center h-64 border-2 border-dashed border-gray-300 rounded-lg">
-                  <div className="text-center">
-                    <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-3.582 8-8 8a9.863 9.863 0 01-4.906-1.298L3 21l1.298-5.094A9.863 9.863 0 013 12c0-4.418 3.582-8 8-8s8 3.582 8 8z" />
-                    </svg>
-                    <h3 className="mt-2 text-sm font-medium text-gray-900">AI 채팅 시작</h3>
-                    <p className="mt-1 text-sm text-gray-500">
-                      AI 튜터와 대화를 시작해보세요.
-                    </p>
-                    <button className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
-                      채팅 시작하기
-                    </button>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg leading-6 font-medium text-gray-900">
+                💬 AI 튜터와 대화하기
+              </h2>
+              <button
+                onClick={() => setShowChat(!showChat)}
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+              >
+                {showChat ? '채팅 닫기' : '채팅 시작하기'}
+              </button>
+            </div>
+            
+            {showChat ? (
+              <div className="bg-white shadow rounded-lg" style={{ height: '600px' }}>
+                <ChatInterface />
+              </div>
+            ) : (
+              <div className="bg-white shadow rounded-lg">
+                <div className="p-6">
+                  <div className="flex items-center justify-center h-64 border-2 border-dashed border-gray-300 rounded-lg">
+                    <div className="text-center">
+                      <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-3.582 8-8 8a9.863 9.863 0 01-4.906-1.298L3 21l1.298-5.094A9.863 9.863 0 013 12c0-4.418 3.582-8 8-8s8 3.582 8 8z" />
+                      </svg>
+                      <h3 className="mt-2 text-sm font-medium text-gray-900">AI 채팅</h3>
+                      <p className="mt-1 text-sm text-gray-500">
+                        AI 튜터와 대화를 시작해보세요.
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            )}
           </div>
 
           {/* 활동 섹션 */}

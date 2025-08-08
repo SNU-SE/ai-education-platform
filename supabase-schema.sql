@@ -18,7 +18,26 @@ CREATE TABLE activities (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 3. AI 채팅 로그 테이블
+-- 3. AI 채팅 세션 테이블
+CREATE TABLE chat_sessions (
+  id SERIAL PRIMARY KEY,
+  user_id UUID REFERENCES auth.users(id),
+  title TEXT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 4. AI 채팅 메시지 테이블
+CREATE TABLE chat_messages (
+  id SERIAL PRIMARY KEY,
+  session_id INTEGER REFERENCES chat_sessions(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES auth.users(id),
+  role TEXT NOT NULL CHECK (role IN ('user', 'assistant')),
+  content TEXT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 5. AI 채팅 로그 테이블 (이전 버전 호환성 - 향후 제거 예정)
 CREATE TABLE chat_logs (
   id SERIAL PRIMARY KEY,
   user_id UUID REFERENCES auth.users(id),
@@ -60,6 +79,8 @@ CREATE TABLE document_chunks (
 
 -- 7. RLS (Row Level Security) 정책 설정
 ALTER TABLE user_roles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE chat_sessions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE chat_messages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE chat_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE files ENABLE ROW LEVEL SECURITY;
 ALTER TABLE student_responses ENABLE ROW LEVEL SECURITY;
@@ -68,6 +89,24 @@ ALTER TABLE student_responses ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can view own user roles" ON user_roles
   FOR SELECT USING (auth.uid() = id);
 
+-- 채팅 세션 정책
+CREATE POLICY "Users can view own chat sessions" ON chat_sessions
+  FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own chat sessions" ON chat_sessions
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own chat sessions" ON chat_sessions
+  FOR UPDATE USING (auth.uid() = user_id);
+
+-- 채팅 메시지 정책
+CREATE POLICY "Users can view own chat messages" ON chat_messages
+  FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own chat messages" ON chat_messages
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+-- 이전 버전 호환성
 CREATE POLICY "Users can view own chat logs" ON chat_logs
   FOR SELECT USING (auth.uid() = user_id);
 
@@ -87,6 +126,22 @@ CREATE POLICY "Users can insert own responses" ON student_responses
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 -- 관리자는 모든 데이터 접근
+CREATE POLICY "Admins can view all chat sessions" ON chat_sessions
+  FOR ALL USING (
+    EXISTS (
+      SELECT 1 FROM user_roles 
+      WHERE id = auth.uid() AND role = 'admin'
+    )
+  );
+
+CREATE POLICY "Admins can view all chat messages" ON chat_messages
+  FOR ALL USING (
+    EXISTS (
+      SELECT 1 FROM user_roles 
+      WHERE id = auth.uid() AND role = 'admin'
+    )
+  );
+
 CREATE POLICY "Admins can view all chat logs" ON chat_logs
   FOR ALL USING (
     EXISTS (
