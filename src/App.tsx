@@ -5,6 +5,8 @@ import { ProtectedRoute, UnauthorizedPage } from './components/auth/ProtectedRou
 import { AuthPage } from './pages/AuthPage'
 import { AdminDashboard } from './pages/AdminDashboard'
 import { StudentDashboard } from './pages/StudentDashboard'
+import { StudentManagement } from './pages/admin/StudentManagement'
+import { ActivityManagement } from './pages/admin/ActivityManagement'
 import './App.css'
 
 // React Query 클라이언트 생성
@@ -39,6 +41,22 @@ function App() {
               element={
                 <ProtectedRoute requireAuth={true} requireRole="admin">
                   <AdminDashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/students" 
+              element={
+                <ProtectedRoute requireAuth={true} requireRole="admin">
+                  <StudentManagement />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/activities" 
+              element={
+                <ProtectedRoute requireAuth={true} requireRole="admin">
+                  <ActivityManagement />
                 </ProtectedRoute>
               } 
             />
